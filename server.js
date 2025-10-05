@@ -104,7 +104,10 @@ app.post('/chat', async (req, res) => {
       { qLen: query.length, snCount: sn.length, ctxLen: context.length, path: effectivePathPrefix || '(global)' });
 
     // ---- 3) Llamar a OpenAI con el contexto como mensaje separado ----
-    const MAIN_RULES = `Responde usando SOLO el contexto de documentos proporcionado. Si hay fragmentos, asume acceso legítimo y NO digas “no tengo acceso…”. Si el contexto está vacío/insuficiente, dilo y sugiere qué documento faltaría.
+    const messages = [
+      {
+        role: 'system',
+        content:`Responde usando SOLO el contexto de documentos proporcionado. Si hay fragmentos, asume acceso legítimo y NO digas “no tengo acceso…”. Si el contexto está vacío/insuficiente, dilo y sugiere qué documento faltaría.
 Salida (Markdown):
 1) **Resumen** breve y directo.
 2) **Evidencia**: 2–5 citas cortas (1–3 líneas) con breve contexto.
@@ -114,10 +117,8 @@ Precisión y estilo:
 - Nunca inventes datos/citas. Si no hay evidencia, dilo.
 - Si es hoja de cálculo/CSV y no ves celdas, pide el archivo.
 - Si la pregunta no requiere documentos, respóndelo pero señala que no usaste archivos del usuario.
-- Español claro, profesional y conciso; pide aclaración solo si es crítico.`;
-    const messages = [
-      {
-      { role: 'system', content: MAIN_RULES },
+- Español claro, profesional y conciso; pide aclaración solo si es crítico.`
+      },
       { role: 'system', content: `Contexto (fragmentos de documentos internos):\n${context || '(vacío)'}` },
       { role: 'system', content: sourcesHint ? `Fuentes sugeridas:\n${sourcesHint}` : 'Fuentes sugeridas: (ninguna)' },
       { role: 'user', content: query }
@@ -171,4 +172,5 @@ Precisión y estilo:
 app.listen(PORT, () => {
   console.log(`ARCO backend running on http://localhost:${PORT}`);
 });
+
 
